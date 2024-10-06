@@ -1,0 +1,70 @@
+#include <MsTimer2.h>
+int pbIn = 0;                    // Define interrupt 0 that is digital pin 2
+int number = 0;
+volatile int state = LOW;
+
+const int trigPin = 7;  // Trigger pin
+const int echoPin = 6;  // Echo pin
+
+long duration;
+int distance;
+
+void setup()
+{
+  Serial.begin(9600);
+  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  attachInterrupt(pbIn, stateChange, FALLING);
+  MsTimer2::set(1000, Handle);
+  MsTimer2::start();
+
+}
+
+void loop()
+{
+  Serial.println(number);
+  delay(1);
+  if (state == HIGH)
+
+  {
+    delay(2000);
+    state = LOW;
+    Serial.println("No moving object");
+
+  }
+
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+
+  distance = duration * 0.034 / 2;
+
+  Serial.print("Distance =");
+  Serial.println(distance);
+
+}
+
+
+void stateChange()
+{
+  number++;
+
+}
+//
+void Handle()
+{
+  if (number > 2)
+  {
+    state = HIGH;
+    Serial.println("moving object detected");
+    number = 0;
+  }
+  else
+    number = 0;
+}
